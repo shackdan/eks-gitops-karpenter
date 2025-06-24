@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+spec:
+  destination:
+    namespace: karpenter
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/shackdan/eks-gitops-karpenter.git
+    path: karpenter/base
+    targetRevision: HEAD
+    helm:
+      values: |
+        serviceAccount:
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<account>:role/KarpenterControllerRole
+        settings:
+          clusterName: your-cluster-name
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
